@@ -2,49 +2,53 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Calculatrice Pro</title>
-
+<title>Calculatrice Scientifique</title>
 <style>
+/* --- Styles généraux --- */
 body {
     margin: 0;
-    background: #111;
-    font-family: Arial;
+    background: #121212;
+    font-family: 'Segoe UI', Arial, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
 }
 
+/* --- Calculatrice --- */
 .calculator {
-    background: #1e1e1e;
+    background: #1f1f1f;
     border-radius: 20px;
     padding: 20px;
-    width: 340px;
-    box-shadow: 0 0 30px rgba(0,0,0,0.6);
+    width: 380px;
+    box-shadow: 0 0 40px rgba(0,0,0,0.7);
 }
 
+/* --- Affichage --- */
 .display {
-    background: black;
+    background: #000;
     color: #00ff99;
-    font-size: 26px;
+    font-size: 28px;
     padding: 15px;
     border-radius: 10px;
     margin-bottom: 10px;
+    min-height: 50px;
     word-wrap: break-word;
-    min-height: 40px;
 }
 
+/* --- Historique --- */
 .history {
     color: #aaa;
     font-size: 12px;
-    height: 50px;
+    height: 60px;
     overflow-y: auto;
     margin-bottom: 10px;
 }
 
+/* --- Boutons --- */
 .buttons {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 10px;
 }
 
@@ -56,15 +60,24 @@ button {
     color: white;
     font-size: 16px;
     cursor: pointer;
+    transition: 0.2s;
 }
 
 button:hover {
     background: #555;
 }
 
+/* --- Types de boutons --- */
 .operator { background: #ff9500; }
 .equal { background: #00c853; }
 .clear { background: #d50000; }
+.function { background: #1976d2; }
+
+/* --- Responsive mobile --- */
+@media (max-width: 400px) {
+    .calculator { width: 95%; }
+    .buttons { grid-template-columns: repeat(4, 1fr); }
+}
 </style>
 </head>
 
@@ -75,45 +88,62 @@ button:hover {
     <div class="display" id="display">0</div>
 
     <div class="buttons">
+        <!-- Ligne 1 -->
         <button class="clear" onclick="clearDisplay()">C</button>
         <button onclick="backspace()">⌫</button>
-        <button onclick="append('(')">(</button>
-        <button onclick="append(')')">)</button>
+        <button class="function" onclick="append('Math.PI')">π</button>
+        <button class="function" onclick="append('Math.E')">e</button>
         <button class="operator" onclick="append('/')">÷</button>
+        <button class="operator" onclick="append('*')">×</button>
 
+        <!-- Ligne 2 -->
         <button onclick="append('7')">7</button>
         <button onclick="append('8')">8</button>
         <button onclick="append('9')">9</button>
-        <button class="operator" onclick="append('*')">×</button>
-        <button onclick="append('Math.sqrt(')">√</button>
+        <button class="operator" onclick="append('-')">−</button>
+        <button class="function" onclick="append('Math.sqrt(')">√</button>
+        <button class="function" onclick="append('Math.pow(')">^</button>
 
+        <!-- Ligne 3 -->
         <button onclick="append('4')">4</button>
         <button onclick="append('5')">5</button>
         <button onclick="append('6')">6</button>
-        <button class="operator" onclick="append('-')">−</button>
-        <button onclick="append('Math.pow(')">^</button>
+        <button class="operator" onclick="append('+')">+</button>
+        <button class="function" onclick="append('Math.sin(')">sin</button>
+        <button class="function" onclick="append('Math.cos(')">cos</button>
 
+        <!-- Ligne 4 -->
         <button onclick="append('1')">1</button>
         <button onclick="append('2')">2</button>
         <button onclick="append('3')">3</button>
-        <button class="operator" onclick="append('+')">+</button>
-        <button onclick="append('Math.sin(')">sin</button>
+        <button class="equal" onclick="calculate()">=</button>
+        <button class="function" onclick="append('Math.tan(')">tan</button>
+        <button class="function" onclick="append('Math.log(')">log</button>
 
+        <!-- Ligne 5 -->
         <button onclick="append('0')">0</button>
         <button onclick="append('.')">.</button>
-        <button class="equal" onclick="calculate()">=</button>
-        <button onclick="append('Math.cos(')">cos</button>
-        <button onclick="append('Math.tan(')">tan</button>
+        <button onclick="append('(')">(</button>
+        <button onclick="append(')')">)</button>
+        <button class="function" onclick="append('Math.log10(')">log10</button>
+        <button class="function" onclick="append('Math.LN10')">ln</button>
     </div>
 </div>
 
 <script>
 let display = document.getElementById("display");
 let history = document.getElementById("history");
+let justCalculated = false; // Pour effacer après résultat
 
 function append(val) {
-    if (display.innerText === "0") display.innerText = val;
-    else display.innerText += val;
+    if (justCalculated) {
+        display.innerText = val;
+        justCalculated = false;
+    } else if (display.innerText === "0") {
+        display.innerText = val;
+    } else {
+        display.innerText += val;
+    }
 }
 
 function clearDisplay() {
@@ -130,12 +160,14 @@ function calculate() {
         let result = eval(expr);
         history.innerHTML += expr + " = " + result + "<br>";
         display.innerText = result;
+        justCalculated = true;
     } catch {
         display.innerText = "Erreur";
+        justCalculated = true;
     }
 }
 
-// clavier
+// Clavier
 document.addEventListener("keydown", function(e) {
     if (!isNaN(e.key) || "+-*/().".includes(e.key)) append(e.key);
     if (e.key === "Enter") calculate();
