@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Calculatrice Scientifique</title>
 <style>
-/* --- Styles généraux --- */
 body {
     margin: 0;
     background: #121212;
@@ -15,16 +14,14 @@ body {
     height: 100vh;
 }
 
-/* --- Calculatrice --- */
 .calculator {
     background: #1f1f1f;
     border-radius: 20px;
     padding: 20px;
-    width: 380px;
+    width: 420px;
     box-shadow: 0 0 40px rgba(0,0,0,0.7);
 }
 
-/* --- Affichage --- */
 .display {
     background: #000;
     color: #00ff99;
@@ -36,7 +33,6 @@ body {
     word-wrap: break-word;
 }
 
-/* --- Historique --- */
 .history {
     color: #aaa;
     font-size: 12px;
@@ -45,7 +41,6 @@ body {
     margin-bottom: 10px;
 }
 
-/* --- Boutons --- */
 .buttons {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
@@ -56,85 +51,85 @@ button {
     padding: 15px;
     border: none;
     border-radius: 10px;
-    background: #333;
-    color: white;
     font-size: 16px;
     cursor: pointer;
     transition: 0.2s;
 }
 
-button:hover {
-    background: #555;
-}
+button:hover { opacity: 0.8; }
 
-/* --- Types de boutons --- */
-.operator { background: #ff9500; }
-.equal { background: #00c853; }
-.clear { background: #d50000; }
-.function { background: #1976d2; }
+/* Couleurs selon type */
+.digit { background: #333; color: #fff; }
+.operator { background: #ff9500; color: #fff; }
+.equal { background: #00c853; color: #fff; }
+.clear { background: #d50000; color: #fff; }
+.function { background: #1976d2; color: #fff; }
+.mode { background: #9c27b0; color: #fff; }
 
-/* --- Responsive mobile --- */
-@media (max-width: 400px) {
+@media (max-width: 450px) {
     .calculator { width: 95%; }
-    .buttons { grid-template-columns: repeat(4, 1fr); }
 }
 </style>
 </head>
 
 <body>
-
 <div class="calculator">
     <div class="history" id="history"></div>
     <div class="display" id="display">0</div>
 
     <div class="buttons">
-        <!-- Ligne 1 -->
-        <button class="clear" onclick="clearDisplay()">C</button>
-        <button onclick="backspace()">⌫</button>
+        <!-- Mode et fonctions à gauche -->
+        <button class="mode" id="modeBtn">DEG</button>
         <button class="function" onclick="append('Math.PI')">π</button>
         <button class="function" onclick="append('Math.E')">e</button>
-        <button class="operator" onclick="append('/')">÷</button>
-        <button class="operator" onclick="append('*')">×</button>
-
-        <!-- Ligne 2 -->
-        <button onclick="append('7')">7</button>
-        <button onclick="append('8')">8</button>
-        <button onclick="append('9')">9</button>
-        <button class="operator" onclick="append('-')">−</button>
         <button class="function" onclick="append('Math.sqrt(')">√</button>
         <button class="function" onclick="append('Math.pow(')">^</button>
+        <button class="clear" onclick="clearDisplay()">C</button>
 
-        <!-- Ligne 3 -->
-        <button onclick="append('4')">4</button>
-        <button onclick="append('5')">5</button>
-        <button onclick="append('6')">6</button>
+        <button class="function" onclick="appendTrig('sin')">sin</button>
+        <button class="function" onclick="appendTrig('cos')">cos</button>
+        <button class="function" onclick="appendTrig('tan')">tan</button>
+        <button class="function" onclick="append('Math.log10(')">log</button>
+        <button class="function" onclick="append('Math.log(')">ln</button>
+        <button onclick="backspace()">⌫</button>
+
+        <!-- Chiffres -->
+        <button class="digit" onclick="append('7')">7</button>
+        <button class="digit" onclick="append('8')">8</button>
+        <button class="digit" onclick="append('9')">9</button>
+        <button class="operator" onclick="append('/')">÷</button>
+        <button class="operator" onclick="append('*')">×</button>
+        <button class="operator" onclick="append('-')">−</button>
+
+        <button class="digit" onclick="append('4')">4</button>
+        <button class="digit" onclick="append('5')">5</button>
+        <button class="digit" onclick="append('6')">6</button>
         <button class="operator" onclick="append('+')">+</button>
-        <button class="function" onclick="append('Math.sin(')">sin</button>
-        <button class="function" onclick="append('Math.cos(')">cos</button>
+        <button class="digit" onclick="append('(')">(</button>
+        <button class="digit" onclick="append(')')">)</button>
 
-        <!-- Ligne 4 -->
-        <button onclick="append('1')">1</button>
-        <button onclick="append('2')">2</button>
-        <button onclick="append('3')">3</button>
+        <button class="digit" onclick="append('1')">1</button>
+        <button class="digit" onclick="append('2')">2</button>
+        <button class="digit" onclick="append('3')">3</button>
+        <button class="digit" onclick="append('0')">0</button>
+        <button class="digit" onclick="append('.')">.</button>
         <button class="equal" onclick="calculate()">=</button>
-        <button class="function" onclick="append('Math.tan(')">tan</button>
-        <button class="function" onclick="append('Math.log(')">log</button>
-
-        <!-- Ligne 5 -->
-        <button onclick="append('0')">0</button>
-        <button onclick="append('.')">.</button>
-        <button onclick="append('(')">(</button>
-        <button onclick="append(')')">)</button>
-        <button class="function" onclick="append('Math.log10(')">log10</button>
-        <button class="function" onclick="append('Math.LN10')">ln</button>
     </div>
 </div>
 
 <script>
 let display = document.getElementById("display");
 let history = document.getElementById("history");
-let justCalculated = false; // Pour effacer après résultat
+let justCalculated = false;
+let degMode = true; // true = DEG, false = RAD
 
+const modeBtn = document.getElementById("modeBtn");
+modeBtn.addEventListener("click", () => {
+    degMode = !degMode;
+    modeBtn.innerText = degMode ? "DEG" : "RAD";
+});
+
+// Efface après calcul
 function append(val) {
     if (justCalculated) {
         display.innerText = val;
@@ -143,6 +138,15 @@ function append(val) {
         display.innerText = val;
     } else {
         display.innerText += val;
+    }
+}
+
+// Append trig avec gestion DEG/RAD
+function appendTrig(func) {
+    if(degMode){
+        append(`Math.${func}(Math.PI/180*`); // Convertit degrés en radians
+    } else {
+        append(`Math.${func}(`);
     }
 }
 
@@ -168,13 +172,12 @@ function calculate() {
 }
 
 // Clavier
-document.addEventListener("keydown", function(e) {
-    if (!isNaN(e.key) || "+-*/().".includes(e.key)) append(e.key);
-    if (e.key === "Enter") calculate();
-    if (e.key === "Backspace") backspace();
-    if (e.key === "Escape") clearDisplay();
+document.addEventListener("keydown", function(e){
+    if(!isNaN(e.key) || "+-*/().".includes(e.key)) append(e.key);
+    if(e.key === "Enter") calculate();
+    if(e.key === "Backspace") backspace();
+    if(e.key === "Escape") clearDisplay();
 });
 </script>
-
 </body>
 </html>
